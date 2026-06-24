@@ -44,13 +44,13 @@ export class ReferralsService {
 
     return this.prisma.attribution.create({
       data: {
-        referralId: referral?.id,
         visitorId: dto.visitorId,
         sourceType,
         landingUrl: dto.landingUrl,
+        ...(referral?.id ? { referralId: referral.id } : {}),
         ...(productId ? { productId } : {}),
         ...(dto.referrerUrl ? { referrerUrl: dto.referrerUrl } : {})
-      }
+      } as Parameters<typeof this.prisma.attribution.create>[0]["data"]
     });
   }
 }

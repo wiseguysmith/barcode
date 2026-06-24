@@ -3,14 +3,14 @@ import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { RedisStore } from "connect-redis";
-import * as session from "express-session";
-import { createClient } from "ioredis";
+import session = require("express-session");
+import Redis from "ioredis";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const redisClient = createClient({ url: process.env.REDIS_URL ?? "redis://localhost:6379" });
+  const redisClient = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379");
 
   app.use(
     session({

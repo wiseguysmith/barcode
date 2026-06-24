@@ -1,7 +1,6 @@
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 import { STRIPE_EVENTS_QUEUE } from "../common/queues";
-import { redisConnectionFromUrl } from "../common/redis";
 import { CommerceModule } from "../commerce/commerce.module";
 import { StripeEventsProcessor } from "./queues/stripe-events.processor";
 
@@ -9,7 +8,7 @@ import { StripeEventsProcessor } from "./queues/stripe-events.processor";
   imports: [
     CommerceModule,
     BullModule.forRoot({
-      connection: redisConnectionFromUrl(process.env.REDIS_URL ?? "redis://localhost:6379")
+      connection: { url: process.env.REDIS_URL ?? "redis://localhost:6379" } as never
     }),
     BullModule.registerQueue({ name: STRIPE_EVENTS_QUEUE })
   ],

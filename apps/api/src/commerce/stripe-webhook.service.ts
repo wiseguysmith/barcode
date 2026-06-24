@@ -1,6 +1,7 @@
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable } from "@nestjs/common";
 import type { Queue } from "bullmq";
+import { Prisma } from "@prisma/client";
 import { STRIPE_EVENTS_QUEUE } from "../common/queues";
 import { PrismaService } from "../database/prisma.service";
 import { OrdersService } from "./orders.service";
@@ -29,11 +30,11 @@ export class StripeWebhookService {
       create: {
         stripeEventId: event.id,
         eventType: event.type,
-        payloadJson: event
+        payloadJson: event as unknown as Prisma.InputJsonValue
       },
       update: {
         eventType: event.type,
-        payloadJson: event,
+        payloadJson: event as unknown as Prisma.InputJsonValue,
         processingStatus: "PENDING"
       }
     });
