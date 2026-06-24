@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Headers, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { Public } from "../common/auth.guard";
+import { SessionUser } from "../common/session-user.decorator";
 import { CreateMissionDto } from "./dto/create-mission.dto";
 import { CreateReferralDto } from "./dto/create-referral.dto";
 import { TrackAttributionDto } from "./dto/track-attribution.dto";
@@ -23,11 +25,13 @@ export class CommunityController {
     return this.referralsService.createReferral(dto);
   }
 
+  @Public()
   @Post("attribution/track")
   trackAttribution(@Body() dto: TrackAttributionDto) {
     return this.referralsService.resolveAttribution(dto);
   }
 
+  @Public()
   @Get("missions")
   listMissions() {
     return this.missionsService.listActiveMissions();
@@ -39,12 +43,15 @@ export class CommunityController {
   }
 
   @Post("missions/:missionId/complete")
-  completeMission(@Param("missionId") missionId: string, @Headers("x-user-id") userId: string) {
+  completeMission(
+    @Param("missionId") missionId: string,
+    @SessionUser() { userId }: { userId: string }
+  ) {
     return this.missionsService.completeMission(missionId, userId);
   }
 
   @Get("points/me/ledger")
-  getMyPointsLedger(@Headers("x-user-id") userId: string) {
+  getMyPointsLedger(@SessionUser() { userId }: { userId: string }) {
     return this.pointsLedgerService.searchLedger(userId);
   }
 
@@ -53,6 +60,7 @@ export class CommunityController {
     return this.pointsLedgerService.searchLedger(userId);
   }
 
+  @Public()
   @Get("leaderboard")
   getLeaderboard() {
     return this.leaderboardService.getLeaderboard();

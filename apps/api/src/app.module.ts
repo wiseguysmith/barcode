@@ -1,7 +1,9 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { APP_GUARD } from "@nestjs/core";
 import { AdminModule } from "./admin/admin.module";
 import { CommerceModule } from "./commerce/commerce.module";
+import { AuthGuard } from "./common/auth.guard";
 import { CommunityModule } from "./community/community.module";
 import { ContentModule } from "./content/content.module";
 import { DatabaseModule } from "./database/database.module";
@@ -20,6 +22,7 @@ import { StorageModule } from "./storage/storage.module";
     CommunityModule,
     AdminModule,
     JobsModule
-  ]
+  ],
+  providers: [{ provide: APP_GUARD, useClass: AuthGuard }]
 })
 export class AppModule {}

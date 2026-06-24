@@ -1,6 +1,15 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException
+} from "@nestjs/common";
+import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../database/prisma.service";
 import type { CreateUserDto } from "./dto/create-user.dto";
+import type { SignInDto } from "./dto/sign-in.dto";
+
+const BCRYPT_ROUNDS = 12;
 
 @Injectable()
 export class IdentityService {
@@ -8,18 +17,14 @@ export class IdentityService {
 
   async createUser(dto: CreateUserDto) {
     const emailNormalized = dto.email.toLowerCase().trim();
+
     const existing = await this.prisma.authMethod.findUnique({
-      where: {
-        provider_providerUserId: {
-          provider: "EMAIL",
-          providerUserId: emailNormalized
-        }
-      }
+      where: { provider_providerUserId: { provider: "EMAIL", providerUserId: emailNormalized } }
     });
 
-    if (existing) {
-      throw new ConflictException("Email is already registered");
-    }
+    if (existing) throw new ConflictException("Email is already registered");
+
+    const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
 
     return this.prisma.user.create({
       data: {
@@ -30,29 +35,58 @@ export class IdentityService {
             provider: "EMAIL",
             providerUserId: emailNormalized,
             email: emailNormalized,
-            verifiedAt: new Date()
+            passwordHash
           }
         }
       },
-      include: { authMethods: true }
+      select: { id: true, displayName: true, emailNormalized: true, role: true, status: true, createdAt: true }
     });
+  }
+
+  async signIn(dto: SignInDto) {
+    const emailNormalized = dto.email.toLowerCase().trim();
+
+    const authMethod = await this.prisma.authMethod.findUnique({
+      where: { provider_providerUserId: { provider: "EMAIL", providerUserId: emailNormalized } },
+      include: { user: true }
+    });
+
+    if (!authMethod?.passwordHash) throw new UnauthorizedException("Invalid credentials");
+
+    const valid = await bcrypt.compare(dto.password, authMethod.passwordHash);
+    if (!valid) throw new UnauthorizedException("Invalid credentials");
+
+    if (authMethod.user.status === "SUSPENDED") {
+      throw new UnauthorizedException("Account is suspended");
+    }
+
+    return {
+      userId: authMethod.user.id,
+      displayName: authMethod.user.displayName,
+      role: authMethod.user.role,
+      emailVerified: authMethod.verifiedAt !== null
+    };
   }
 
   async getUserById(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { authMethods: true, creatorProfile: true }
+      select: {
+        id: true,
+        displayName: true,
+        emailNormalized: true,
+        role: true,
+        status: true,
+        createdAt: true,
+        creatorProfile: true,
+        authMethods: {
+          select: { provider: true, email: true, verifiedAt: true, walletAddress: true }
+        }
+      }
     });
 
     if (!user) throw new NotFoundException("User not found");
     return user;
-  }
-
-  async getUserByAuthMethod(provider: "EMAIL" | "WALLET", providerUserId: string) {
-    return this.prisma.authMethod.findUnique({
-      where: { provider_providerUserId: { provider, providerUserId } },
-      include: { user: true }
-    });
   }
 
   async attachWalletAuthMethod(userId: string, walletAddress: string) {
@@ -69,9 +103,6 @@ export class IdentityService {
   }
 
   async updateUserStatus(userId: string, status: "ACTIVE" | "SUSPENDED") {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: { status }
-    });
+    return this.prisma.user.update({ where: { id: userId }, data: { status } });
   }
 }

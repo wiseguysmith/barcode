@@ -1,11 +1,10 @@
-import { Body, Controller, Get, Headers, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { Public } from "../common/auth.guard";
+import { SessionUser } from "../common/session-user.decorator";
 import { CheckoutService } from "./checkout.service";
 import { CreateCheckoutSessionDto } from "./dto/create-checkout-session.dto";
-import {
-  CreateConnectAccountDto,
-  CreateConnectAccountLinkDto
-} from "./dto/connect-account.dto";
+import { CreateConnectAccountDto, CreateConnectAccountLinkDto } from "./dto/connect-account.dto";
 import { OrdersService } from "./orders.service";
 import { StripeConnectService } from "./stripe-connect.service";
 import { StripeWebhookService } from "./stripe-webhook.service";
@@ -35,12 +34,15 @@ export class CommerceController {
   }
 
   @Post("checkout/sessions")
-  createCheckoutSession(@Body() dto: CreateCheckoutSessionDto) {
-    return this.checkoutService.createCheckoutSession(dto);
+  createCheckoutSession(
+    @Body() dto: CreateCheckoutSessionDto,
+    @SessionUser() { userId }: { userId: string }
+  ) {
+    return this.checkoutService.createCheckoutSession({ ...dto, buyerUserId: userId });
   }
 
   @Get("orders/me")
-  listMyOrders(@Headers("x-user-id") userId: string) {
+  listMyOrders(@SessionUser() { userId }: { userId: string }) {
     return this.ordersService.listOrdersForUser(userId);
   }
 
@@ -54,8 +56,11 @@ export class CommerceController {
     return this.ordersService.getCreatorSalesStats(creatorId);
   }
 
+  @Public()
   @Post("webhooks/stripe")
-  enqueueStripeWebhook(@Body() event: { id: string; type: string; data: { object: Record<string, unknown> } }) {
+  enqueueStripeWebhook(
+    @Body() event: { id: string; type: string; data: { object: Record<string, unknown> } }
+  ) {
     return this.stripeWebhookService.enqueueStripeEvent(event);
   }
 }

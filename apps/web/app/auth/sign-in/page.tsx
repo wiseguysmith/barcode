@@ -1,24 +1,55 @@
+"use client";
+
 import Link from "next/link";
-import { LogIn } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "../../../components/button";
 import { PageHeader } from "../../../components/page-header";
+import { apiPost } from "../../../lib/api";
 
 export default function SignInPage() {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    const form = new FormData(e.currentTarget);
+
+    try {
+      await apiPost("/auth/signin", {
+        email: form.get("email"),
+        password: form.get("password")
+      });
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign in failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="max-w-xl">
       <PageHeader title="Sign in" />
-      <form className="grid gap-4 rounded-md border border-line bg-white p-5">
+      <form onSubmit={handleSubmit} className="grid gap-4 rounded-md border border-line bg-white p-5">
         <label className="grid gap-2 text-sm font-medium">
           Email
-          <input className="h-10 rounded-md border border-line px-3" type="email" />
+          <input name="email" type="email" required className="h-10 rounded-md border border-line px-3" />
         </label>
         <label className="grid gap-2 text-sm font-medium">
           Password
-          <input className="h-10 rounded-md border border-line px-3" type="password" />
+          <input name="password" type="password" required minLength={8} className="h-10 rounded-md border border-line px-3" />
         </label>
-        <Button type="button">
-          <LogIn size={16} aria-hidden />
-          Sign in
+
+        {error && (
+          <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>
+        )}
+
+        <Button type="submit" disabled={loading}>
+          {loading ? "Signing in…" : "Sign in"}
         </Button>
         <Link href="/auth/sign-up" className="text-sm font-medium text-mint">
           Create account

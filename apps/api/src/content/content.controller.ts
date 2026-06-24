@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Headers, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { Public } from "../common/auth.guard";
+import { SessionUser } from "../common/session-user.decorator";
+import { ContentAccessService } from "./content-access.service";
+import { CreatorProfilesService } from "./creator-profiles.service";
 import { CreateCreatorProfileDto } from "./dto/create-creator-profile.dto";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UploadProductFileDto } from "./dto/upload-product-file.dto";
-import { ContentAccessService } from "./content-access.service";
-import { CreatorProfilesService } from "./creator-profiles.service";
 import { ProductsService } from "./products.service";
 
 @ApiTags("content")
@@ -26,6 +28,7 @@ export class ContentController {
     return this.creatorProfilesService.submitForReview(creatorId);
   }
 
+  @Public()
   @Get("creators/:handle/public")
   getPublicCreatorPage(@Param("handle") handle: string) {
     return this.creatorProfilesService.getPublicCreatorPage(handle);
@@ -48,7 +51,7 @@ export class ContentController {
 
   @Get("products/:productId/download-url")
   createSignedDownloadUrl(
-    @Headers("x-user-id") userId: string,
+    @SessionUser() { userId }: { userId: string },
     @Param("productId") productId: string
   ) {
     return this.contentAccessService.createSignedDownloadUrls(userId, productId);
