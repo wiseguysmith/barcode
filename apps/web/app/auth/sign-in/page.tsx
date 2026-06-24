@@ -33,15 +33,15 @@ export default function SignInPage() {
 
   return (
     <div className="max-w-xl">
-      <PageHeader title="Sign in" />
-      <form onSubmit={handleSubmit} className="grid gap-4 rounded-md border border-line bg-white p-5">
+      <PageHeader title="Sign in" eyebrow="Get on code" />
+      <form onSubmit={handleSubmit} className="grid gap-4 rounded-md border border-line bg-brown p-5">
         <label className="grid gap-2 text-sm font-medium">
           Email
-          <input name="email" type="email" required className="h-10 rounded-md border border-line px-3" />
+          <input name="email" type="email" required className="h-10 rounded-md border border-line bg-paper px-3 text-white" />
         </label>
         <label className="grid gap-2 text-sm font-medium">
           Password
-          <input name="password" type="password" required minLength={8} className="h-10 rounded-md border border-line px-3" />
+          <input name="password" type="password" required minLength={8} className="h-10 rounded-md border border-line bg-paper px-3 text-white" />
         </label>
 
         {error && (
@@ -51,7 +51,7 @@ export default function SignInPage() {
         <Button type="submit" disabled={loading}>
           {loading ? "Signing in…" : "Sign in"}
         </Button>
-        <Link href="/auth/sign-up" className="text-sm font-medium text-mint">
+        <Link href="/auth/sign-up" className="text-sm font-semibold uppercase text-copper">
           Create account
         </Link>
       </form>

@@ -7,7 +7,7 @@ export default function CreatorOnboardingPage() {
   return (
     <div className="max-w-3xl">
       <PageHeader title="Creator profile" eyebrow="Onboarding" />
-      <form className="grid gap-4 rounded-md border border-line bg-white p-5">
+      <form className="grid gap-4 rounded-md border border-line bg-brown p-5">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="grid gap-2 text-sm font-medium">
             Handle
@@ -24,7 +24,7 @@ export default function CreatorOnboardingPage() {
         </label>
         <button
           type="button"
-          className="flex h-28 items-center justify-center gap-2 rounded-md border border-dashed border-zinc-300 bg-zinc-50 text-sm font-medium text-zinc-600"
+          className="flex h-28 items-center justify-center gap-2 rounded-md border border-dashed border-copper/40 bg-paper text-sm font-medium text-muted"
         >
           <ImageUp size={18} aria-hidden />
           Upload profile media

@@ -7,7 +7,7 @@ export default function AdminPointsPage() {
     <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
       <section>
         <PageHeader title="Adjust points" />
-        <form className="grid gap-4 rounded-md border border-line bg-white p-5">
+        <form className="grid gap-4 rounded-md border border-line bg-brown p-5">
           <label className="grid gap-2 text-sm font-medium">
             User ID
             <input className="h-10 rounded-md border border-line px-3" />
@@ -34,7 +34,7 @@ export default function AdminPointsPage() {
       </section>
       <section>
         <PageHeader title="Points ledger" />
-        <div className="rounded-md border border-line bg-white p-5 text-sm text-zinc-600">
+        <div className="rounded-md border border-line bg-brown p-5 text-sm text-muted">
           No ledger entries yet.
         </div>
       </section>

@@ -12,7 +12,7 @@ export default async function OrderPage({
   return (
     <div className="max-w-2xl">
       <PageHeader title="Order" eyebrow={orderId} />
-      <section className="rounded-md border border-line bg-white p-5">
+      <section className="rounded-md border border-line bg-brown p-5">
         <Button type="button">
           <Download size={16} aria-hidden />
           Download

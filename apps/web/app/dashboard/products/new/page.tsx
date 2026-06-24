@@ -6,7 +6,7 @@ export default function NewProductPage() {
   return (
     <div className="max-w-3xl">
       <PageHeader title="New product" />
-      <form className="grid gap-4 rounded-md border border-line bg-white p-5">
+      <form className="grid gap-4 rounded-md border border-line bg-brown p-5">
         <label className="grid gap-2 text-sm font-medium">
           Title
           <input className="h-10 rounded-md border border-line px-3" />
@@ -29,7 +29,7 @@ export default function NewProductPage() {
         </div>
         <button
           type="button"
-          className="flex h-32 items-center justify-center gap-2 rounded-md border border-dashed border-zinc-300 bg-zinc-50 text-sm font-medium text-zinc-600"
+          className="flex h-32 items-center justify-center gap-2 rounded-md border border-dashed border-copper/40 bg-paper text-sm font-medium text-muted"
         >
           <Upload size={18} aria-hidden />
           Upload paid file

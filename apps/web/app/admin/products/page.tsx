@@ -4,9 +4,9 @@ export default function AdminProductsPage() {
   return (
     <div>
       <PageHeader title="Products" />
-      <div className="overflow-hidden rounded-md border border-line bg-white">
+      <div className="overflow-hidden rounded-md border border-line bg-brown">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-line bg-zinc-50 text-zinc-500">
+          <thead className="border-b border-line bg-paper text-muted">
             <tr>
               <th className="px-4 py-3 font-medium">Product</th>
               <th className="px-4 py-3 font-medium">Creator</th>
@@ -16,7 +16,7 @@ export default function AdminProductsPage() {
           </thead>
           <tbody>
             <tr>
-              <td className="px-4 py-4 text-zinc-500" colSpan={4}>No products yet.</td>
+              <td className="px-4 py-4 text-muted" colSpan={4}>No products yet.</td>
             </tr>
           </tbody>
         </table>

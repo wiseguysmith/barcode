@@ -15,7 +15,7 @@ export default function ReferralsPage() {
     <div>
       <PageHeader title="Referrals" />
       <StatGrid stats={stats} />
-      <section className="mt-6 rounded-md border border-line bg-white p-5">
+      <section className="mt-6 rounded-md border border-line bg-brown p-5">
         <label className="grid gap-2 text-sm font-medium">
           Referral link
           <div className="flex gap-2">

@@ -36,9 +36,9 @@ export default function AdminPage() {
           <Link
             href={link.href}
             key={link.href}
-            className="flex items-center gap-3 rounded-md border border-line bg-white p-4 text-sm font-medium hover:border-zinc-400"
+            className="flex items-center gap-3 rounded-md border border-line bg-brown p-4 text-sm font-medium hover:border-copper"
           >
-            <link.icon size={18} className="text-mint" aria-hidden />
+            <link.icon size={18} className="text-copper" aria-hidden />
             {link.label}
           </Link>
         ))}

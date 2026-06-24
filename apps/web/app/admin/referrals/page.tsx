@@ -4,7 +4,7 @@ export default function AdminReferralsPage() {
   return (
     <div>
       <PageHeader title="Referral attribution" />
-      <div className="rounded-md border border-line bg-white p-5 text-sm text-zinc-600">
+      <div className="rounded-md border border-line bg-brown p-5 text-sm text-muted">
         No attribution records yet.
       </div>
     </div>

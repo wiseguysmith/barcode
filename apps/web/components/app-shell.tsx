@@ -25,40 +25,48 @@ const navItems = [
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-paper text-ink">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-line bg-white px-4 py-5 lg:block">
-        <Link href="/" className="flex items-center gap-3 px-2 text-lg font-semibold">
-          <span className="flex size-9 items-center justify-center rounded-md bg-ink text-white">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-copper/35 bg-paper px-4 py-5 lg:block">
+        <Link href="/" className="flex items-center gap-3 px-2 text-lg font-semibold uppercase">
+          <span className="flex size-9 items-center justify-center rounded-md border border-copper bg-brown text-copper">
             <ChartNoAxesCombined size={18} aria-hidden />
           </span>
           Barcode DAO
         </Link>
+        <p className="mt-3 px-2 text-xs font-medium uppercase text-muted">Get on code</p>
 
         <nav className="mt-8 grid gap-1">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-ink"
+              className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-semibold uppercase text-muted hover:bg-brown hover:text-white"
             >
               <item.icon size={17} aria-hidden />
               {item.label}
             </Link>
           ))}
         </nav>
+
+        <div className="absolute inset-x-4 bottom-5 rounded-md border border-copper/35 bg-brown p-3">
+          <p className="text-xs font-semibold uppercase text-copper">V1 build lane</p>
+          <p className="mt-1 text-xs text-muted">Distribution, checkout, and creator operations first.</p>
+        </div>
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-line bg-white/95 px-4 backdrop-blur md:px-6">
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-copper/35 bg-paper/95 px-4 backdrop-blur md:px-6">
           <div className="flex items-center gap-3 lg:hidden">
-            <span className="flex size-9 items-center justify-center rounded-md bg-ink text-white">
+            <span className="flex size-9 items-center justify-center rounded-md border border-copper bg-brown text-copper">
               <ChartNoAxesCombined size={18} aria-hidden />
             </span>
-            <span className="font-semibold">Barcode DAO</span>
+            <span className="font-semibold uppercase">Barcode DAO</span>
           </div>
-          <div className="hidden text-sm text-zinc-600 lg:block">Creator distribution engine</div>
+          <div className="hidden text-sm font-semibold uppercase text-muted lg:block">
+            Industrializing culture through creator distribution
+          </div>
           <Link
             href="/auth/sign-in"
-            className="flex h-9 items-center gap-2 rounded-md border border-line bg-white px-3 text-sm font-medium hover:bg-zinc-50"
+            className="flex h-9 items-center gap-2 rounded-md border border-copper/60 bg-brown px-3 text-sm font-semibold uppercase text-white hover:border-copper"
           >
             <UserRound size={16} aria-hidden />
             Sign in

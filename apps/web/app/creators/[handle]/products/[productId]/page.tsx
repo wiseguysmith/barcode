@@ -13,8 +13,8 @@ export default async function PublicProductPage({
   return (
     <div className="max-w-3xl">
       <PageHeader title="Digital product" eyebrow={productId} />
-      <section className="rounded-md border border-line bg-white p-5">
-        <p className="text-sm text-zinc-600">$10.00</p>
+      <section className="rounded-md border border-line bg-brown p-5">
+        <p className="text-sm text-muted">$10.00</p>
         <Link href={`/checkout/${productId}`} className="mt-5 inline-flex">
           <Button>
             <ShoppingCart size={16} aria-hidden />

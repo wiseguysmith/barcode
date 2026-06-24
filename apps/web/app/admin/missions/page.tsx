@@ -14,7 +14,7 @@ export default function AdminMissionsPage() {
           </Button>
         }
       />
-      <div className="rounded-md border border-line bg-white p-5 text-sm text-zinc-600">
+      <div className="rounded-md border border-line bg-brown p-5 text-sm text-muted">
         No missions yet.
       </div>
     </div>

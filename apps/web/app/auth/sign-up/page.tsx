@@ -34,19 +34,19 @@ export default function SignUpPage() {
 
   return (
     <div className="max-w-xl">
-      <PageHeader title="Create account" />
-      <form onSubmit={handleSubmit} className="grid gap-4 rounded-md border border-line bg-white p-5">
+      <PageHeader title="Create account" eyebrow="Your voice matters" />
+      <form onSubmit={handleSubmit} className="grid gap-4 rounded-md border border-line bg-brown p-5">
         <label className="grid gap-2 text-sm font-medium">
           Display name
-          <input name="displayName" required minLength={2} className="h-10 rounded-md border border-line px-3" />
+          <input name="displayName" required minLength={2} className="h-10 rounded-md border border-line bg-paper px-3 text-white" />
         </label>
         <label className="grid gap-2 text-sm font-medium">
           Email
-          <input name="email" type="email" required className="h-10 rounded-md border border-line px-3" />
+          <input name="email" type="email" required className="h-10 rounded-md border border-line bg-paper px-3 text-white" />
         </label>
         <label className="grid gap-2 text-sm font-medium">
           Password
-          <input name="password" type="password" required minLength={8} className="h-10 rounded-md border border-line px-3" />
+          <input name="password" type="password" required minLength={8} className="h-10 rounded-md border border-line bg-paper px-3 text-white" />
         </label>
 
         {error && (
@@ -56,7 +56,7 @@ export default function SignUpPage() {
         <Button type="submit" disabled={loading} className="w-full">
           {loading ? "Creating account…" : "Create account"}
         </Button>
-        <Link href="/auth/sign-in" className="text-sm font-medium text-mint">
+        <Link href="/auth/sign-in" className="text-sm font-semibold uppercase text-copper">
           Already have an account? Sign in
         </Link>
       </form>
