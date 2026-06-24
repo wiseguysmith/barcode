@@ -1,0 +1,12 @@
+node_modules/
+.agents/
+.codex/
+.turbo/
+.next/
+dist/
+coverage/
+.env
+.env.local
+.env.*.local
+*.log
+apps/api/prisma/

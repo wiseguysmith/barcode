@@ -1,0 +1,19 @@
+{
+  "name": "barcode-dao",
+  "private": true,
+  "packageManager": "pnpm@9.12.3",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "typecheck": "turbo typecheck",
+    "db:generate": "pnpm --filter @barcode/database db:generate",
+    "db:migrate": "pnpm --filter @barcode/database db:migrate",
+    "db:studio": "pnpm --filter @barcode/database db:studio"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  }
+}

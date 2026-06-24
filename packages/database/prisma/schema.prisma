@@ -1,0 +1,344 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  CREATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum AuthProvider {
+  EMAIL
+  WALLET
+}
+
+enum CreatorStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+enum StripeOnboardingStatus {
+  NOT_STARTED
+  PENDING
+  COMPLETE
+  RESTRICTED
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+  SUSPENDED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ReferralSourceType {
+  DIRECT
+  CREATOR_LINK
+  COMMUNITY_REFERRAL
+}
+
+enum MissionStatus {
+  DRAFT
+  ACTIVE
+  ENDED
+}
+
+enum MissionCompletionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum StripeEventProcessingStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+model User {
+  id              String               @id @default(uuid()) @db.Uuid
+  displayName     String               @map("display_name")
+  emailNormalized String?              @map("email_normalized")
+  role            UserRole             @default(USER)
+  status          UserStatus           @default(ACTIVE)
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+  authMethods     AuthMethod[]
+  creatorProfile  CreatorProfile?
+  buyerOrders     Order[]              @relation("BuyerOrders")
+  referrals       Referral[]           @relation("UserReferrals")
+  attributions    Attribution[]
+  missionReviews  MissionCompletion[]  @relation("MissionReviewer")
+  missionProgress MissionCompletion[]  @relation("MissionUser")
+  pointsEntries   PointsLedgerEntry[]   @relation("PointsUser")
+  createdPoints   PointsLedgerEntry[]   @relation("PointsCreator")
+  pointsBalance   PointsBalance?
+  adminAuditLogs  AdminAuditLog[]       @relation("AdminAuditActor")
+
+  @@index([emailNormalized])
+  @@map("users")
+}
+
+model AuthMethod {
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  provider       AuthProvider
+  providerUserId String       @map("provider_user_id")
+  email          String?
+  walletAddress  String?      @map("wallet_address")
+  verifiedAt     DateTime?    @map("verified_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  user           User         @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("auth_methods")
+}
+
+model CreatorProfile {
+  id                     String                 @id @default(uuid()) @db.Uuid
+  userId                 String                 @unique @map("user_id") @db.Uuid
+  handle                 String                 @unique
+  name                   String
+  bio                    String
+  avatarUrl              String?                @map("avatar_url")
+  bannerUrl              String?                @map("banner_url")
+  status                 CreatorStatus          @default(DRAFT)
+  stripeAccountId        String?                @unique @map("stripe_account_id")
+  stripeOnboardingStatus StripeOnboardingStatus @default(NOT_STARTED) @map("stripe_onboarding_status")
+  createdAt              DateTime               @default(now()) @map("created_at")
+  updatedAt              DateTime               @updatedAt @map("updated_at")
+  user                   User                   @relation(fields: [userId], references: [id])
+  products               Product[]
+  orders                 Order[]
+  referrals              Referral[]
+
+  @@index([status])
+  @@map("creator_profiles")
+}
+
+model Product {
+  id            String         @id @default(uuid()) @db.Uuid
+  creatorId     String         @map("creator_id") @db.Uuid
+  title         String
+  description   String
+  priceCents    Int            @map("price_cents")
+  currency      String         @default("usd")
+  status        ProductStatus  @default(DRAFT)
+  coverImageUrl String?        @map("cover_image_url")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  creator       CreatorProfile @relation(fields: [creatorId], references: [id])
+  files         ProductFile[]
+  orders        Order[]
+  referrals     Referral[]
+  attributions  Attribution[]
+
+  @@index([creatorId, status])
+  @@map("products")
+}
+
+model ProductFile {
+  id          String   @id @default(uuid()) @db.Uuid
+  productId   String   @map("product_id") @db.Uuid
+  storageKey  String   @map("storage_key")
+  filename    String
+  contentType String   @map("content_type")
+  sizeBytes   Int      @map("size_bytes")
+  createdAt   DateTime @default(now()) @map("created_at")
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+  @@map("product_files")
+}
+
+model Order {
+  id                      String              @id @default(uuid()) @db.Uuid
+  buyerUserId             String?             @map("buyer_user_id") @db.Uuid
+  productId               String              @map("product_id") @db.Uuid
+  creatorId               String              @map("creator_id") @db.Uuid
+  stripeCheckoutSessionId String              @unique @map("stripe_checkout_session_id")
+  stripePaymentIntentId   String?             @map("stripe_payment_intent_id")
+  amountCents             Int                 @map("amount_cents")
+  platformFeeCents        Int                 @map("platform_fee_cents")
+  creatorAmountCents      Int                 @map("creator_amount_cents")
+  currency                String              @default("usd")
+  status                  OrderStatus         @default(PENDING)
+  attributionId           String?             @map("attribution_id") @db.Uuid
+  paidAt                  DateTime?           @map("paid_at")
+  createdAt               DateTime            @default(now()) @map("created_at")
+  updatedAt               DateTime            @updatedAt @map("updated_at")
+  buyer                   User?               @relation("BuyerOrders", fields: [buyerUserId], references: [id])
+  product                 Product             @relation(fields: [productId], references: [id])
+  creator                 CreatorProfile      @relation(fields: [creatorId], references: [id])
+  attribution             Attribution?        @relation(fields: [attributionId], references: [id])
+  downloadGrants          DownloadGrant[]
+
+  @@index([buyerUserId, status])
+  @@index([creatorId, status])
+  @@map("orders")
+}
+
+model Referral {
+  id             String             @id @default(uuid()) @db.Uuid
+  referrerUserId String?            @map("referrer_user_id") @db.Uuid
+  creatorId      String?            @map("creator_id") @db.Uuid
+  productId      String?            @map("product_id") @db.Uuid
+  referralCode   String             @unique @map("referral_code")
+  sourceType     ReferralSourceType @map("source_type")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  referrer       User?              @relation("UserReferrals", fields: [referrerUserId], references: [id])
+  creator        CreatorProfile?    @relation(fields: [creatorId], references: [id])
+  product        Product?           @relation(fields: [productId], references: [id])
+  attributions   Attribution[]
+
+  @@index([referrerUserId])
+  @@index([creatorId])
+  @@map("referrals")
+}
+
+model Attribution {
+  id          String             @id @default(uuid()) @db.Uuid
+  referralId  String?            @map("referral_id") @db.Uuid
+  visitorId   String             @map("visitor_id")
+  buyerUserId String?            @map("buyer_user_id") @db.Uuid
+  productId   String?            @map("product_id") @db.Uuid
+  sourceType  ReferralSourceType @map("source_type")
+  landingUrl  String             @map("landing_url")
+  referrerUrl String?            @map("referrer_url")
+  utmSource   String?            @map("utm_source")
+  utmMedium   String?            @map("utm_medium")
+  utmCampaign String?            @map("utm_campaign")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  referral    Referral?          @relation(fields: [referralId], references: [id])
+  buyer       User?              @relation(fields: [buyerUserId], references: [id])
+  product     Product?           @relation(fields: [productId], references: [id])
+  orders      Order[]
+
+  @@index([visitorId])
+  @@index([buyerUserId])
+  @@map("attributions")
+}
+
+model Mission {
+  id          String              @id @default(uuid()) @db.Uuid
+  title       String
+  description String
+  pointsReward Int                @map("points_reward")
+  status      MissionStatus       @default(DRAFT)
+  startsAt    DateTime?           @map("starts_at")
+  endsAt      DateTime?           @map("ends_at")
+  createdBy   String              @map("created_by") @db.Uuid
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+  completions MissionCompletion[]
+
+  @@index([status])
+  @@map("missions")
+}
+
+model MissionCompletion {
+  id         String                  @id @default(uuid()) @db.Uuid
+  missionId  String                  @map("mission_id") @db.Uuid
+  userId     String                  @map("user_id") @db.Uuid
+  status     MissionCompletionStatus @default(PENDING)
+  reviewedBy String?                 @map("reviewed_by") @db.Uuid
+  reviewedAt DateTime?               @map("reviewed_at")
+  createdAt  DateTime                @default(now()) @map("created_at")
+  mission    Mission                 @relation(fields: [missionId], references: [id])
+  user       User                    @relation("MissionUser", fields: [userId], references: [id])
+  reviewer   User?                   @relation("MissionReviewer", fields: [reviewedBy], references: [id])
+
+  @@unique([missionId, userId])
+  @@index([userId, status])
+  @@map("mission_completions")
+}
+
+model PointsLedgerEntry {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  delta     Int
+  reason    String
+  sourceId  String   @map("source_id")
+  createdBy String   @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation("PointsUser", fields: [userId], references: [id])
+  creator   User     @relation("PointsCreator", fields: [createdBy], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([sourceId])
+  @@map("points_ledger_entries")
+}
+
+model PointsBalance {
+  userId    String   @id @map("user_id") @db.Uuid
+  balance   Int      @default(0)
+  rebuiltAt DateTime @default(now()) @map("rebuilt_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("points_balances")
+}
+
+model AdminAuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  adminUserId String   @map("admin_user_id") @db.Uuid
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  beforeJson  Json?    @map("before_json")
+  afterJson   Json?    @map("after_json")
+  reason      String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  admin       User     @relation("AdminAuditActor", fields: [adminUserId], references: [id])
+
+  @@index([adminUserId, createdAt])
+  @@index([entityType, entityId])
+  @@map("admin_audit_logs")
+}
+
+model StripeEvent {
+  id               String                      @id @default(uuid()) @db.Uuid
+  stripeEventId    String                      @unique @map("stripe_event_id")
+  eventType        String                      @map("event_type")
+  payloadJson      Json                        @map("payload_json")
+  processingStatus StripeEventProcessingStatus @default(PENDING) @map("processing_status")
+  receivedAt       DateTime                    @default(now()) @map("received_at")
+  processedAt      DateTime?                   @map("processed_at")
+
+  @@index([processingStatus, receivedAt])
+  @@map("stripe_events")
+}
+
+model DownloadGrant {
+  id        String    @id @default(uuid()) @db.Uuid
+  orderId   String    @map("order_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  productId String    @map("product_id") @db.Uuid
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  order     Order     @relation(fields: [orderId], references: [id])
+
+  @@index([userId, productId])
+  @@map("download_grants")
+}
