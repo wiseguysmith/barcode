@@ -21,18 +21,20 @@ export default function HomePage() {
               Creator distribution engine
             </h1>
             <p className="mt-4 max-w-2xl text-base text-muted md:text-lg">
-              BARCODE gives builders a shared operating layer for products, checkout, referrals, and
-              community-backed demand.
+              Sell your work. Build your community. Own the economy you create.
             </p>
           </div>
           <div className="rounded-md border border-copper/40 bg-brown p-4">
-            <p className="text-xs font-semibold uppercase text-copper">Brand north star</p>
-            <p className="mt-2 text-sm text-muted">
-              Industrializing culture and shaping the future of technology and community.
-            </p>
+            <p className="text-xs font-semibold uppercase text-copper">For creators</p>
+            <ul className="mt-2 grid gap-1 text-sm text-muted">
+              <li>→ Upload &amp; sell digital products</li>
+              <li>→ Keep 85% of every sale</li>
+              <li>→ Build a referral network that pays</li>
+              <li>→ Earn reputation as your community grows</li>
+            </ul>
             <Link href="/auth/sign-up" className="mt-4 inline-flex">
               <Button>
-                Start signup
+                Get On Code
                 <ArrowRight size={16} aria-hidden />
               </Button>
             </Link>
