@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import {
   BadgeDollarSign,
   Boxes,
-  ChartNoAxesCombined,
   ClipboardCheck,
   Compass,
   LayoutDashboard,
@@ -11,6 +10,23 @@ import {
   Trophy,
   UserRound
 } from "lucide-react";
+
+function BarcodeIcon({ size = 18 }: { size?: number }) {
+  const bars = [3, 1, 2, 1, 3, 1, 1, 2, 1, 2, 1, 1, 3, 1, 2, 1, 1, 2, 1, 3];
+  const total = bars.reduce((a, b) => a + b, 0);
+  let x = 0;
+  return (
+    <svg width={size * 1.4} height={size} viewBox={`0 0 ${total} 10`} aria-hidden>
+      {bars.map((w, i) => {
+        const rect = i % 2 === 0 ? (
+          <rect key={i} x={x} y={0} width={w} height={10} fill="currentColor" />
+        ) : null;
+        x += w;
+        return rect;
+      })}
+    </svg>
+  );
+}
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -28,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-copper/35 bg-paper px-4 py-5 lg:block">
         <Link href="/" className="flex items-center gap-3 px-2 text-lg font-semibold uppercase">
           <span className="flex size-9 items-center justify-center rounded-md border border-copper bg-brown text-copper">
-            <ChartNoAxesCombined size={18} aria-hidden />
+            <BarcodeIcon size={18} />
           </span>
           Barcode DAO
         </Link>
@@ -57,7 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-copper/35 bg-paper/95 px-4 backdrop-blur md:px-6">
           <div className="flex items-center gap-3 lg:hidden">
             <span className="flex size-9 items-center justify-center rounded-md border border-copper bg-brown text-copper">
-              <ChartNoAxesCombined size={18} aria-hidden />
+              <BarcodeIcon size={18} />
             </span>
             <span className="font-semibold uppercase">Barcode DAO</span>
           </div>
