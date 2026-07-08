@@ -9,8 +9,10 @@ export function middleware(request: NextRequest) {
 
   if (!isProtected) return NextResponse.next();
 
-  // Session cookie set by the API — if absent, redirect to sign-in
-  const hasSession = request.cookies.has("connect.sid");
+  // Session cookie is httpOnly and proxied — check for its presence
+  const hasSession =
+    request.cookies.has("connect.sid") ||
+    request.cookies.has("barcode.sid");
 
   if (!hasSession) {
     const signIn = new URL("/auth/sign-in", request.url);

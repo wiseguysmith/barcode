@@ -14,6 +14,7 @@ async function bootstrap() {
 
   app.use(
     session({
+      name: "barcode.sid",
       store: new RedisStore({ client: redisClient }),
       secret: process.env.SESSION_SECRET ?? "dev-secret-change-me",
       resave: false,
