@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseInterceptors, UploadedFile } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiTags } from "@nestjs/swagger";
 import { Public } from "../common/auth.guard";
 import { SessionUser } from "../common/session-user.decorator";
@@ -47,6 +48,38 @@ export class ContentController {
   @Post("products/:productId/publish")
   publishProduct(@Param("productId") productId: string) {
     return this.productsService.publishProduct(productId);
+  }
+
+  @Get("products/:productId")
+  getProduct(@Param("productId") productId: string) {
+    return this.productsService.getProduct(productId);
+  }
+
+  @Get("creators/:creatorId/products")
+  getCreatorProducts(@Param("creatorId") creatorId: string) {
+    return this.productsService.getCreatorProducts(creatorId);
+  }
+
+  @Get("creators/me/profile")
+  getMyCreatorProfile(@SessionUser() { userId }: { userId: string }) {
+    return this.creatorProfilesService.getCreatorByUserId(userId);
+  }
+
+  @Get("creators/me/products")
+  async getMyProducts(@SessionUser() { userId }: { userId: string }) {
+    const creator = await this.creatorProfilesService.getCreatorByUserId(userId);
+    if (!creator) throw new NotFoundException("Creator profile not found");
+    return this.productsService.getCreatorProducts(creator.id);
+  }
+
+  @Post("products/upload")
+  @UseInterceptors(FileInterceptor("file"))
+  async uploadProductWithFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() dto: CreateProductDto,
+    @SessionUser() { userId }: { userId: string }
+  ) {
+    return this.productsService.createProductWithFile(userId, file, dto);
   }
 
   @Get("products/:productId/download-url")

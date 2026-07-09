@@ -15,7 +15,7 @@ export class CheckoutService {
   async createCheckoutSession(dto: CreateCheckoutSessionDto) {
     const product = await this.productsService.getProductForCheckout(dto.productId);
     const split = calculatePaymentSplit(product.priceCents);
-    const stripeCheckoutSessionId = `cs_pending_${randomUUID()}`;
+    const stripeCheckoutSessionId = `cs_test_${randomUUID().slice(0, 24)}`;
 
     const order = await this.prisma.order.create({
       data: {
@@ -29,13 +29,16 @@ export class CheckoutService {
         status: "PENDING",
         ...(dto.buyerUserId ? { buyerUserId: dto.buyerUserId } : {}),
         ...(dto.attributionId ? { attributionId: dto.attributionId } : {})
-      }
+      },
+      include: { product: true, creator: true }
     });
 
     return {
       orderId: order.id,
       checkoutSessionId: stripeCheckoutSessionId,
-      checkoutUrl: `https://checkout.stripe.com/pay/${stripeCheckoutSessionId}`,
+      // Mock redirect URL — in real flow, this comes from Stripe
+      checkoutUrl: `/api/checkout/confirm?sessionId=${stripeCheckoutSessionId}&orderId=${order.id}`,
+      product: { title: product.title, priceCents: product.priceCents },
       split
     };
   }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { Public } from "../common/auth.guard";
 import { SessionUser } from "../common/session-user.decorator";
@@ -54,6 +54,20 @@ export class CommerceController {
   @Get("creators/:creatorId/sales-stats")
   getCreatorSalesStats(@Param("creatorId") creatorId: string) {
     return this.ordersService.getCreatorSalesStats(creatorId);
+  }
+
+  @Get("creators/:creatorId/orders")
+  getCreatorOrders(@Param("creatorId") creatorId: string) {
+    return this.ordersService.getCreatorOrders(creatorId);
+  }
+
+  @Public()
+  @Get("checkout/confirm")
+  async confirmCheckout(@Query() query: { sessionId: string; orderId: string }) {
+    // Mock confirmation — in real flow, this comes from Stripe webhook
+    // For testing, hitting this URL marks the order as PAID
+    await this.ordersService.markCheckoutSessionPaid(query.sessionId, `pi_mock_${query.orderId}`);
+    return { success: true, message: "Payment confirmed", orderId: query.orderId };
   }
 
   @Public()

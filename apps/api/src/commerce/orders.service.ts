@@ -74,4 +74,12 @@ export class OrdersService {
       communityReferredSales
     };
   }
+
+  async getCreatorOrders(creatorId: string) {
+    return this.prisma.order.findMany({
+      where: { creatorId },
+      include: { product: true, buyer: { select: { id: true, displayName: true, emailNormalized: true } }, attribution: true },
+      orderBy: { createdAt: "desc" }
+    });
+  }
 }

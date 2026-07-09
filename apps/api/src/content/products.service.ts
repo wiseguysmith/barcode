@@ -1,11 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../database/prisma.service";
+import { StorageService } from "../storage/storage.service";
 import type { CreateProductDto } from "./dto/create-product.dto";
 import type { UploadProductFileDto } from "./dto/upload-product-file.dto";
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService
+  ) {}
 
   async createProduct(dto: CreateProductDto) {
     return this.prisma.product.create({
@@ -74,5 +78,62 @@ export class ProductsService {
       where: { productId },
       orderBy: { createdAt: "asc" }
     });
+  }
+
+  async getProduct(productId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { creator: { select: { id: true, handle: true, name: true, avatarUrl: true } }, files: true }
+    });
+
+    if (!product) throw new NotFoundException("Product not found");
+    return product;
+  }
+
+  async getCreatorProducts(creatorId: string) {
+    return this.prisma.product.findMany({
+      where: { creatorId },
+      include: { files: true },
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  async createProductWithFile(
+    userId: string,
+    file: Express.Multer.File,
+    dto: CreateProductDto
+  ) {
+    // Get or create creator profile for this user
+    const creator = await this.prisma.creatorProfile.findUnique({
+      where: { userId }
+    });
+
+    if (!creator) throw new BadRequestException("Creator profile not found. Please set up your creator profile first.");
+
+    // Upload file to storage
+    const { storageKey } = await this.storageService.uploadFile(file.buffer, file.originalname);
+
+    // Create product
+    const product = await this.prisma.product.create({
+      data: {
+        creatorId: creator.id,
+        title: dto.title,
+        description: dto.description,
+        priceCents: dto.priceCents,
+        currency: dto.currency || "usd",
+        status: "DRAFT",
+        files: {
+          create: {
+            storageKey,
+            filename: file.originalname,
+            contentType: file.mimetype,
+            sizeBytes: file.size
+          }
+        }
+      },
+      include: { files: true }
+    });
+
+    return product;
   }
 }

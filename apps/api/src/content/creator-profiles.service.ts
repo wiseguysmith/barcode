@@ -90,4 +90,10 @@ export class CreatorProfilesService {
     if (!creator) throw new NotFoundException("Creator not found");
     return creator;
   }
+
+  async getCreatorByUserId(userId: string) {
+    return this.prisma.creatorProfile.findUnique({
+      where: { userId }
+    });
+  }
 }
