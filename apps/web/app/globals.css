@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --font-structure: Oswald, "Arial Narrow", Arial, sans-serif;
-  --font-editorial: Playfair Display, Georgia, serif;
+  --font-structure: var(--font-structure-loaded), "Arial Narrow", Arial, sans-serif;
+  --font-editorial: var(--font-editorial-loaded), Georgia, serif;
 }
 
 * {
@@ -35,9 +35,18 @@ textarea,
 select {
   background: #0a0a0a;
   color: #ffffff;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 input::placeholder,
 textarea::placeholder {
   color: #a8a8a8;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #b87333;
+  box-shadow: 0 0 0 3px rgba(184, 115, 51, 0.25);
 }

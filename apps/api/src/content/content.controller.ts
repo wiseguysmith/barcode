@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseInterceptors, UploadedFile } from "@nestjs/common";
+import { Body, Controller, Get, NotFoundException, Param, Post, UseInterceptors, UploadedFile } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiTags } from "@nestjs/swagger";
 import { Public } from "../common/auth.guard";
@@ -9,6 +9,7 @@ import { CreateCreatorProfileDto } from "./dto/create-creator-profile.dto";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UploadProductFileDto } from "./dto/upload-product-file.dto";
 import { ProductsService } from "./products.service";
+import type { UploadedFilePayload } from "./products.service";
 
 @ApiTags("content")
 @Controller()
@@ -75,7 +76,7 @@ export class ContentController {
   @Post("products/upload")
   @UseInterceptors(FileInterceptor("file"))
   async uploadProductWithFile(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: UploadedFilePayload,
     @Body() dto: CreateProductDto,
     @SessionUser() { userId }: { userId: string }
   ) {

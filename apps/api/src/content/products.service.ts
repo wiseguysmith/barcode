@@ -4,6 +4,13 @@ import { StorageService } from "../storage/storage.service";
 import type { CreateProductDto } from "./dto/create-product.dto";
 import type { UploadProductFileDto } from "./dto/upload-product-file.dto";
 
+export type UploadedFilePayload = {
+  originalname: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+};
+
 @Injectable()
 export class ProductsService {
   constructor(
@@ -100,7 +107,7 @@ export class ProductsService {
 
   async createProductWithFile(
     userId: string,
-    file: Express.Multer.File,
+    file: UploadedFilePayload,
     dto: CreateProductDto
   ) {
     // Get or create creator profile for this user

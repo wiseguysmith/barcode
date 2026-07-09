@@ -8,8 +8,9 @@ export class StorageController {
   constructor(private readonly storageService: StorageService) {}
 
   @Public()
-  @Get(":storageKey(*)")
-  async downloadFile(@Param("storageKey") storageKey: string, @Res() res: Response) {
+  @Get("*storagePath")
+  async downloadFile(@Param("storagePath") storagePathParam: string | string[], @Res() res: Response) {
+    const storageKey = Array.isArray(storagePathParam) ? storagePathParam.join("/") : storagePathParam;
     try {
       const buffer = await this.storageService.readFile(storageKey);
       const filename = storageKey.split("/").pop() ?? "download";
