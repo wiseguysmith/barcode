@@ -6,8 +6,11 @@ import { OrdersService } from "../commerce/orders.service";
 import { PointsLedgerService } from "../community/points-ledger.service";
 import { PrismaService } from "../database/prisma.service";
 import { AuditLogService } from "./audit-log.service";
-import type { CreatorStatusDto, ProductStatusDto } from "./dto/admin-status.dto";
-import type { PointsAdjustmentDto } from "../community/dto/points-adjustment.dto";
+import type {
+  AdminPointsAdjustmentDto,
+  CreatorStatusDto,
+  ProductStatusDto
+} from "./dto/admin-status.dto";
 
 @Injectable()
 export class AdminService {
@@ -35,7 +38,7 @@ export class AdminService {
     });
   }
 
-  async moderateCreator(creatorId: string, dto: CreatorStatusDto) {
+  async moderateCreator(creatorId: string, dto: CreatorStatusDto, adminUserId: string) {
     const before = await this.creatorProfilesService.getCreatorById(creatorId);
     const after =
       dto.status === "APPROVED"
@@ -43,7 +46,7 @@ export class AdminService {
         : await this.creatorProfilesService.suspendCreatorProfile(creatorId);
 
     await this.auditLogService.auditAction({
-      adminUserId: dto.adminUserId,
+      adminUserId,
       action: `creator.${dto.status.toLowerCase()}`,
       entityType: "creator_profile",
       entityId: creatorId,
@@ -63,14 +66,14 @@ export class AdminService {
     });
   }
 
-  async moderateProduct(productId: string, dto: ProductStatusDto) {
+  async moderateProduct(productId: string, dto: ProductStatusDto, adminUserId: string) {
     const before = await this.prisma.product.findUniqueOrThrow({
       where: { id: productId }
     });
     const after = await this.productsService.moderateProduct(productId, dto.status);
 
     await this.auditLogService.auditAction({
-      adminUserId: dto.adminUserId,
+      adminUserId,
       action: `product.${dto.status.toLowerCase()}`,
       entityType: "product",
       entityId: productId,
@@ -102,23 +105,23 @@ export class AdminService {
     });
   }
 
-  async adjustPoints(dto: PointsAdjustmentDto) {
+  async adjustPoints(dto: AdminPointsAdjustmentDto, adminUserId: string) {
     const auditLog = await this.auditLogService.auditAction({
-      adminUserId: dto.createdBy,
+      adminUserId,
       action: "points.adjust",
       entityType: "user",
       entityId: dto.userId,
       afterJson: {
         delta: dto.delta,
-        reason: dto.reason,
-        sourceId: dto.sourceId
+        reason: dto.reason
       },
       reason: dto.reason
     });
 
     return this.pointsLedgerService.addPointsLedgerEntry({
       ...dto,
-      sourceId: auditLog.id
+      sourceId: auditLog.id,
+      createdBy: adminUserId
     });
   }
 

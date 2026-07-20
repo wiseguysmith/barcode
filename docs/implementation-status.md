@@ -35,11 +35,11 @@ Last verified against actual code on 2026-07-13. Do not trust older status notes
 - **Email verification.** `AuthMethod.verifiedAt` field exists in the schema but nothing ever sets it. No verification email, no token, no confirm endpoint.
 - **Password reset.** No endpoint, no service method, nothing.
 
-## Security Gap — Fix This Regardless of Priority Order
+## Security Gap — Fixed In Current Local Changes
 
-`apps/api/src/admin/admin.controller.ts` has no role check. The global `AuthGuard` only confirms "is there a valid session" — it does not check `UserRole`. **Any signed-in user (USER or CREATOR role) can currently call every admin endpoint**, including creator/product moderation and manual points adjustment.
+`apps/api/src/admin/admin.controller.ts` is now protected with `@Roles("ADMIN")`, backed by `apps/api/src/common/roles.guard.ts`.
 
-**Task:** Add a `RolesGuard` (or extend `AuthGuard`) that checks `req.session.userRole === "ADMIN"` for everything under `AdminController`. Small fix, should not wait for anything else.
+The same local change removes client-supplied `adminUserId` / `createdBy` from admin moderation and point-adjustment requests. Those actions now use the signed-in session user for audit logs and ledger entries.
 
 ## Frontend — Wired vs. Static Mockup
 
@@ -58,15 +58,14 @@ Last verified against actual code on 2026-07-13. Do not trust older status notes
 
 Ordered so each step is independently testable and doesn't block on external credentials unless noted.
 
-1. **Add admin role guard.** No new dependencies, no credentials needed. Security fix, do first.
-2. **Wire `checkout/[productId]/page.tsx` to `POST /checkout/sessions`.** No new credentials needed (still using the mock checkout flow underneath) — this at least makes the existing mock loop clickable end to end in the browser.
-3. **Wire `creators/[handle]/page.tsx` to `GET /creators/:handle/public`.** No new credentials needed. Makes the storefront show real products instead of a fake card.
-4. **Wire `dashboard/page.tsx`** to pull real aggregate stats (can reuse `sales-stats` endpoint).
-5. **Wire the three `community/*` pages** to their already-working backend endpoints (`GET /missions`, `GET /leaderboard`, referral endpoints). No new credentials needed.
-6. **Wire the 9 `admin/*` pages** to their already-working backend endpoints. No new credentials needed. Do this after step 1 (role guard) is in place.
-7. **Real Stripe integration** — Connect onboarding, real Checkout Sessions with `application_fee_amount`, real webhook signature verification. **Blocked on real Stripe test API keys from the user.** Once keys are added to `.env`, remove the `checkout/confirm` test endpoint or gate it behind a non-production flag.
-8. **Real file storage (Cloudflare R2)** — swap `storage.service.ts` implementation, implement real signed URLs. **Blocked on real R2 credentials from the user.**
-9. **Email verification + password reset** — net-new feature, no blockers, lowest urgency of what's listed here.
+1. **Add creator ownership checks.** No new credentials needed. Protect profile/product/upload/Stripe/sales-stat routes from cross-creator access.
+2. **Restrict `GET /orders/:orderId`** to the buyer, owning creator, or admin.
+3. **Wire `dashboard/page.tsx`** to pull real aggregate stats (can reuse `sales-stats` endpoint).
+4. **Wire the three `community/*` pages** to their already-working backend endpoints (`GET /missions`, `GET /leaderboard`, referral endpoints). No new credentials needed.
+5. **Wire the 9 `admin/*` pages** to their already-working backend endpoints. The API side is now role-protected; the frontend still needs admin-only route handling.
+6. **Real Stripe integration** — Connect onboarding, real Checkout Sessions with `application_fee_amount`, real webhook signature verification. **Blocked on real Stripe test API keys from the user.** Once keys are added to `.env`, remove the `checkout/confirm` test endpoint or gate it behind a non-production flag.
+7. **Real file storage (Cloudflare R2)** — swap `storage.service.ts` implementation, implement real signed URLs. **Blocked on real R2 credentials from the user.**
+8. **Email verification + password reset** — net-new feature, no blockers, lowest urgency of what's listed here.
 
 ## What NOT To Build Yet
 

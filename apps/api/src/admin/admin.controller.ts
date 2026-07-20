@@ -1,11 +1,17 @@
 import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { PointsAdjustmentDto } from "../community/dto/points-adjustment.dto";
+import { Roles } from "../common/roles.guard";
+import { SessionUser, type SessionUserPayload } from "../common/session-user.decorator";
 import { AdminService } from "./admin.service";
 import { AuditLogService } from "./audit-log.service";
-import { CreatorStatusDto, ProductStatusDto } from "./dto/admin-status.dto";
+import {
+  AdminPointsAdjustmentDto,
+  CreatorStatusDto,
+  ProductStatusDto
+} from "./dto/admin-status.dto";
 
 @ApiTags("admin")
+@Roles("ADMIN")
 @Controller("admin")
 export class AdminController {
   constructor(
@@ -24,8 +30,12 @@ export class AdminController {
   }
 
   @Patch("creators/:creatorId/status")
-  moderateCreator(@Param("creatorId") creatorId: string, @Body() dto: CreatorStatusDto) {
-    return this.adminService.moderateCreator(creatorId, dto);
+  moderateCreator(
+    @Param("creatorId") creatorId: string,
+    @Body() dto: CreatorStatusDto,
+    @SessionUser() sessionUser: SessionUserPayload
+  ) {
+    return this.adminService.moderateCreator(creatorId, dto, sessionUser.userId);
   }
 
   @Get("products")
@@ -34,8 +44,12 @@ export class AdminController {
   }
 
   @Patch("products/:productId/status")
-  moderateProduct(@Param("productId") productId: string, @Body() dto: ProductStatusDto) {
-    return this.adminService.moderateProduct(productId, dto);
+  moderateProduct(
+    @Param("productId") productId: string,
+    @Body() dto: ProductStatusDto,
+    @SessionUser() sessionUser: SessionUserPayload
+  ) {
+    return this.adminService.moderateProduct(productId, dto, sessionUser.userId);
   }
 
   @Get("orders")
@@ -54,8 +68,11 @@ export class AdminController {
   }
 
   @Post("points/adjust")
-  adjustPoints(@Body() dto: PointsAdjustmentDto) {
-    return this.adminService.adjustPoints(dto);
+  adjustPoints(
+    @Body() dto: AdminPointsAdjustmentDto,
+    @SessionUser() sessionUser: SessionUserPayload
+  ) {
+    return this.adminService.adjustPoints(dto, sessionUser.userId);
   }
 
   @Get("revenue")

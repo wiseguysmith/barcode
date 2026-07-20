@@ -1,19 +1,24 @@
 # Barcode DAO Handoff
 
-This handoff is for the next Codex, Claude, or human engineer picking up Barcode DAO after the initial scaffold, Sprint 1 auth work, API compile fixes, shared package runtime fix, and light brand-layer frontend pass.
+This handoff is for the next Codex, Claude, or human engineer picking up Barcode DAO after the initial scaffold, Sprint 1 auth work, Sprint 2 product/upload/mock-checkout work, API compile fixes, shared package runtime fixes, and brand/frontend wiring passes.
+
+Last repo-state check: 2026-07-13.
 
 ## Current Repository State
 
 - GitHub repo: `https://github.com/wiseguysmith/barcode.git`
 - Active branch: `main`
-- Recent commits:
-  - `3f1b3d9` - build shared package to CommonJS dist for API runtime
-  - `1f1f695` - apply Barcode brand layer
-  - `1bad45c` - resolve TypeScript compilation errors blocking API startup
-  - `473048d` - session-based auth end to end
-  - `cc7c478` - initial app scaffold
+- Git status before this handoff refresh: clean on `main...origin/main`
+- Expected local change after this handoff refresh: `M docs/handoff-next-steps.md` unless this doc update has been committed.
+- Recent commits at last check:
+  - `9a08d39` - docs: rewrite implementation-status.md with verified current state
+  - `c41e93e` - fix: API build errors + UI polish pass
+  - `fb86396` - feat: Sprint 2 frontend - complete transaction flow
+  - `80c240d` - feat: Sprint 2 backend - product upload, mock checkout, order tracking
+  - `be781a0` - fix: resolve cross-origin login by proxying API through Next.js
 - Working directory note: this repo is currently nested at `C:\Users\18593\New folder\barcode`. The parent folder may also contain an older workspace copy.
-- Known local uncommitted change at handoff time: `apps/api/nest-cli.json` has an `entryFile` change. Inspect before editing or committing.
+- Known local uncommitted changes before this handoff refresh: none.
+- `apps/api/nest-cli.json` currently includes `"entryFile": "apps/api/src/main"` and is committed.
 
 ## Product Direction
 
@@ -76,7 +81,7 @@ pnpm --filter @barcode/shared test
 $env:DATABASE_URL="postgresql://barcode:barcode@localhost:5432/barcode"; pnpm --filter @barcode/database test
 ```
 
-2. Resolve or intentionally commit the existing local `apps/api/nest-cli.json` change.
+2. Review and commit the current security/doc changes if they should be preserved.
 
 3. Run the app stack locally:
 
@@ -111,9 +116,9 @@ pnpm --dir apps/web exec next dev --port 3004
 
 ### Authorization
 
-- Add role guard/decorator for `ADMIN`.
-- Protect all `admin/*` routes with admin role checks.
-- Replace body-supplied `adminUserId` / `createdBy` with the session user.
+- Done in current local changes: add role guard/decorator for `ADMIN`.
+- Done in current local changes: protect all `admin/*` routes with admin role checks.
+- Done in current local changes: replace body-supplied `adminUserId` / `createdBy` with the session user for admin moderation and point adjustment.
 - Add creator ownership checks:
   - creator profile update/submit
   - product create/update/publish
